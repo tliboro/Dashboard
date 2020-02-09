@@ -1,0 +1,121 @@
+---
+title: "Tyler Liboro"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    navbar:
+      - {title: 'Spotify', icon: 'fa-spotify',href: 'https://open.spotify.com/playlist/6Wgm0Tf70bUV84Q7n6pnEz', target: '_blank'}
+      - {title: 'Twitter', icon: 'fa-twitter', href: 'https://twitter.com/TyTy_Boro', target: '_blank'}
+      - {title: 'LinkedIn', icon: 'fa-linkedin',href: 'https://www.linkedin.com/in/tyler-liboro/', target: '_blank'}
+
+    theme: lumen
+    #css: bootstrap.css
+---
+
+<style type="text/css">
+
+.chart-title {  /* chart_title  */
+   font-size: 30px;
+   font-family: Algerian;
+
+</style>
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+
+```
+
+[Text - on all tabs] {data-width=650} 
+-----------------------------------------------------------------------
+[text]
+
+```{r}
+
+```
+
+About Me
+=======================================================================
+
+Row
+-----------------------------------------------------------------------
+
+
+```{r}
+
+```
+
+Home
+=======================================================================
+
+
+
+Row
+-----------------------------------------------------------------------
+### Music
+
+```{r}
+m.path <- paste0(getwd(), '/Music.R')
+source(file = m.path)
+p
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+
+```
+
+Coaching
+=======================================================================
+
+Row
+-----------------------------------------------------------------------
+### Basketball
+
+```{r}
+
+```
+
+Food
+=======================================================================
+
+Row
+-----------------------------------------------------------------------
+### Chart C
+
+```{r}
+
+```
+
+
+
+```{js}
+setTimeout(function(){
+  $('a[href="https://open.spotify.com/playlist/6Wgm0Tf70bUV84Q7n6pnEz"]').attr('target', '_blank')
+  $('a[href="https://twitter.com/TyTy_Boro"]').attr('target', '_blank')
+  $('a[href="https://www.linkedin.com/in/tyler-liboro/"]').attr('target', '_blank')
+}, 1000)
+
+
+# setTimeout(function(){
+#   $('a[href="https://twitter.com/TyTy_Boro"]').attr('target', '_blank')
+# }, 1000)
+# 'https://www.linkedin.com/in/tyler-liboro/'
+
+```
