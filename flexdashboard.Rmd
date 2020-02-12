@@ -2,8 +2,8 @@
 title: "Tyler Liboro"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: columns
-    vertical_layout: fill
+    orientation: rows
+    #vertical_layout: fill
     navbar:
       - {title: 'Spotify', icon: 'fa-spotify',href: 'https://open.spotify.com/playlist/6Wgm0Tf70bUV84Q7n6pnEz', target: '_blank'}
       - {title: 'Twitter', icon: 'fa-twitter', href: 'https://twitter.com/TyTy_Boro', target: '_blank'}
@@ -23,86 +23,53 @@ output:
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
+library(DT)
+m.path <- paste0(getwd(), '/Music.R')
+source(file = m.path)
 
 ```
 
-[Text - on all tabs] {data-width=650} 
------------------------------------------------------------------------
-[text]
 
+Column {.sidebar data-width=350}
+-------------------------------------
+### Inputs
 ```{r}
+library(crosstalk)
+bscols(
+  list(
+    filter_select(id = "Year", label = "Year", sharedData = shared_dt, group =  ~endtime_Year, multiple = F)
+  )
+)
+  
 
 ```
 
-About Me
-=======================================================================
-
-Row
------------------------------------------------------------------------
-
-
-```{r}
-
-```
-
-Home
-=======================================================================
-
-
-
-Row
------------------------------------------------------------------------
-### Music
-
+Row {data-height=350}
+-------------------------------------
+### Top Artists 2019
 ```{r}
 m.path <- paste0(getwd(), '/Music.R')
 source(file = m.path)
 p
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+### Top Songs
 ```{r}
+library(DT)
+m.path <- paste0(getwd(), '/Music.R')
+source(file = m.path)
+datatable(songs, options = list(bPaginate = TRUE))
+```   
 
-```
-
-Coaching
-=======================================================================
-
-Row
------------------------------------------------------------------------
-### Basketball
-
+Row {data-height=650}
+-------------------------------------
+### Chart 4
 ```{r}
-
+library(plotly)
+plotly(data = shared_dt, x = ~endTime_month, y = ~artistName, type = 'scatter') 
+      # color = ~artistName, type = 'box',
+       # showlegend = F)
 ```
-
-Food
-=======================================================================
-
-Row
------------------------------------------------------------------------
-### Chart C
-
-```{r}
-
-```
-
 
 
 ```{js}
