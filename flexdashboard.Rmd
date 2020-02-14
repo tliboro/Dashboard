@@ -38,6 +38,7 @@ library(crosstalk)
 bscols(
   list(
     filter_select(id = "Year", label = "Year", sharedData = shared_dt, group =  ~endtime_Year, multiple = F)
+    #filter_slider(id = 'Total', label = 'Total', sharedData = shared_dt, 'endtime_Year')
   )
 )
   
@@ -46,6 +47,16 @@ bscols(
 
 Row {data-height=350}
 -------------------------------------
+``` {r}
+library(flexdashboard)
+
+renderValueBox({
+    valueBox(best_day, caption = 'Most Listened Day', icon = 'fa-spotify', color = 'primary', href = NULL)    
+})
+
+```
+
+
 ### Top Artists 2019
 ```{r}
 m.path <- paste0(getwd(), '/Music.R')
@@ -66,7 +77,13 @@ Row {data-height=650}
 ### Chart 4
 ```{r}
 library(plotly)
-plotly(data = shared_dt, x = ~endTime_month, y = ~artistName, type = 'scatter') 
+
+plot_ly() %>%
+        add_trace(data = shared_dt,
+        x = ~endtime_Month,
+        y = ~artistName,
+        group = ~endtime_Year, type = 'scatter')
+
       # color = ~artistName, type = 'box',
        # showlegend = F)
 ```
