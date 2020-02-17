@@ -22,8 +22,10 @@ output:
 </style>
 
 ```{r setup, include=FALSE}
-library(flexdashboard)
-library(DT)
+libs <- c('flexdashboard', 'DT', 'plotly', 'plotly')
+lapply(libs, require, character.only=T)
+
+
 m.path <- paste0(getwd(), '/Music.R')
 source(file = m.path)
 
@@ -37,25 +39,70 @@ Column {.sidebar data-width=350}
 library(crosstalk)
 bscols(
   list(
-    filter_select(id = "Year", label = "Year", sharedData = shared_dt, group =  ~endtime_Year, multiple = F)
-    #filter_slider(id = 'Total', label = 'Total', sharedData = shared_dt, 'endtime_Year')
+    filter_select(id = "Year", label = "Year", sharedData = shared_dt, group =  ~endtime_Year, multiple = T)
   )
 )
   
 
 ```
 
-Row {data-height=350}
--------------------------------------
-``` {r}
-library(flexdashboard)
+Row
+-----------------------------------------------------------------------
 
-renderValueBox({
-    valueBox(best_day, caption = 'Most Listened Day', icon = 'fa-spotify', color = 'primary', href = NULL)    
-})
+### Total Minutes Listened
+
+``` {r}
+tot_min <- total_min2019
+valueBox(tot_min, caption = 'Total Listened Minutes', icon = 'fa-spotify', color = '#1DB954')  
 
 ```
 
+
+### Most Listened Day
+```{r}
+most_day <- topDay_2019
+#most_day <- top
+valueBox(most_day, caption = 'Most Listened Day', icon = 'fa-spotify', color = '#191414')
+```
+
+### Third Graph
+```{r}
+temp <- topHour_2019
+valueBox(temp, caption = 'temp', icon = 'fa-spotify', color = '#1DB954')
+
+```
+
+
+
+<!-- Row -->
+<!-- ----------------------------------------------------------------------- -->
+
+<!-- ### Total Minutes Listened 2019 -->
+
+<!-- ``` {r} -->
+<!-- tot_min <- total_min2019 -->
+<!-- valueBox(tot_min, caption = 'Total Listened Minutes', icon = 'fa-spotify', color = '#1DB954')   -->
+
+<!-- ``` -->
+
+
+<!-- ### Most Listened Day 2019 -->
+<!-- ```{r} -->
+<!-- most_day <- topDay_2019 -->
+<!-- #most_day <- top -->
+<!-- valueBox(most_day, caption = 'Most Listened Day', icon = 'fa-spotify', color = '#191414') -->
+<!-- ``` -->
+
+<!-- ### Third Graph 2019 -->
+<!-- ```{r} -->
+<!-- temp <- paste0('Hour: ', topHour_2019) -->
+<!-- valueBox(temp, caption = 'temp', icon = 'fa-spotify', color = '#1DB954') -->
+
+<!-- ``` -->
+
+
+Row
+-----------------------------------------------------------------------
 
 ### Top Artists 2019
 ```{r}
@@ -66,7 +113,6 @@ p
 
 ### Top Songs
 ```{r}
-library(DT)
 m.path <- paste0(getwd(), '/Music.R')
 source(file = m.path)
 datatable(songs, options = list(bPaginate = TRUE))
@@ -76,13 +122,12 @@ Row {data-height=650}
 -------------------------------------
 ### Chart 4
 ```{r}
-library(plotly)
 
-plot_ly() %>%
-        add_trace(data = shared_dt,
-        x = ~endtime_Month,
-        y = ~artistName,
-        group = ~endtime_Year, type = 'scatter')
+# plot_ly() %>%
+#         add_trace(data = shared_dt,
+#         x = ~endtime_Month,
+#         y = ~artistName,
+#         group = ~endtime_Year, type = 'scatter')
 
       # color = ~artistName, type = 'box',
        # showlegend = F)
