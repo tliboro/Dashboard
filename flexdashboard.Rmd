@@ -70,6 +70,8 @@ valueBox(most_day, caption = 'Most Listened Day', icon = 'fa-spotify', color = '
 temp <- topHour_2019
 valueBox(temp, caption = 'temp', icon = 'fa-spotify', color = '#1DB954')
 
+#https://rmarkdown.rstudio.com/flexdashboard/using.html#value_boxes
+
 ```
 
 
@@ -115,7 +117,7 @@ p
 ```{r}
 m.path <- paste0(getwd(), '/Music.R')
 source(file = m.path)
-datatable(songs, options = list(bPaginate = TRUE))
+datatable(songs, options = list(bPaginate = TRUE) )
 ```   
 
 Row {data-height=650}
