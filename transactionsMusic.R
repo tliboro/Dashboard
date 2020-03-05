@@ -24,20 +24,28 @@ AMEX$Weekday <- ordered(x = AMEX$Weekday, c('Sunday', 'Monday', 'Tuesday', 'Wedn
 
 
 library(plotly)
+
+
+
+days <- seq(from = as.Date('2019-02-03'), to = as.Date('2019-12-31'), by = 'days') %>%
+  as.data.table %>% setnames(., '.', 'days')
+
 temp <- AMEX[, Purchases := 1]
 daily_payments <- dcast(data = temp, formula = Date ~ ., fun.aggregate = sum, value.var = c('Amount', 'Purchases') )
 daily_payments <- daily_payments[year(Date) %in% 2019]
-max.height <- daily_payments$Amount %>% max
 
+daily_payments <- merge(x = days, y = daily_payments, by.x = 'days', by.y = 'Date', all.x = T)
 
+#Need to make sure that there are placeholders for zeros
+PAYMENTS <- merge(x = daily_payments, y = temp_music, by = 'days')
 
 #source(paste0(getwd(), '/Desktop/PersonalProjects/plotly_shortcuts.R') )
-fig <- plot_ly(data = daily_payments, 
-               x = ~Date, y = ~Amount, mode = 'lines', text = ~paste('</br> Date: ', Date,
-                                                                    '</br> Total Amount: ', Amount, 
-                                                                     '</br> Total Purchases: ', Purchases), 
-               hoverinfo = 'text') %>% display_seasons(., 'Spending Habits by Season', max(daily_payments$Amount))
-fig
-
+# fig <- plot_ly(data = daily_payments, 
+#                x = ~Date, y = ~Amount, mode = 'lines', text = ~paste('</br> Date: ', Date,
+#                                                                     '</br> Total Amount: ', Amount, 
+#                                                                      '</br> Total Purchases: ', Purchases), 
+#                hoverinfo = 'text') %>% display_seasons(., 'Spending Habits by Season', max(daily_payments$Amount))
+# fig
+# 
 
 

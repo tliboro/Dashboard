@@ -119,23 +119,23 @@ yearlyHour <- do.call(rbind, lapply(years, function(year) {
 #'Crosstalk data table that is connnected to the sidebar
 #shared_dt <- SharedData$new(data = dt, key = dt$endtime_Year, group = 'Year')
 
-#MASTER_TABLE <- as.data.table()
 
 
 
 
 
-
-
-
-
+days <- seq(from = as.Date('2019-02-03'), to = as.Date('2019-12-31'), by = 'days') %>%
+  as.data.table %>% setnames(., '.', 'days')
 
 temp_music <- dt[, Listened_Songs := 1] %>% .[year(Date) %in% '2019'] %>% 
   dcast(data = ., formula = Date ~ ., fun.aggregate = sum, value.var = c('Listened_Songs', 'minPlayed') ) 
 
-fig2 <- plot_ly(data = temp_music,
-        x = ~Date, y = ~minPlayed,
-        mode = 'lines', line = list(color = 'rgb(205,12,24)'),
-        text = ~paste('</br> Minutes Played: ', minPlayed, 
-                      '</br> Songs Listened: ', Listened_Songs)) %>%
-  display_seasons(., 'Listening habits by Season', max(temp_music$minPlayed))
+
+temp_music <- merge(x = days, y = temp_music, by.x = 'days', by.y = 'Date', all.x = T)
+
+# plot_ly(data = temp_music,
+#         x = ~Date, y = ~minPlayed,
+#         mode = 'lines', line = list(color = 'rgb(205,12,24)'),
+#         text = ~paste('</br> Minutes Played: ', minPlayed, 
+#                       '</br> Songs Listened: ', Listened_Songs)) %>%
+#   display_seasons(., '', max(temp_music$minPlayed))

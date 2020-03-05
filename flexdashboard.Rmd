@@ -14,34 +14,32 @@ output:
 ---
 
 <style type="text/css">
-
 .chart-title {  /* chart_title  */
    font-size: 30px;
    font-family: Algerian;
-
 </style>
 
 ```{r setup, include=FALSE}
-libs <- c('flexdashboard', 'DT', 'plotly', 'plotly')
+libs <- c('flexdashboard', 'DT', 'plotly')
 lapply(libs, require, character.only=T)
 
-
-m.path <- paste0(getwd(), '/Music.R')
-source(file = m.path)
+source(paste0(getwd(), '/plotly_shortcuts.R') )
+source(file = paste0(getwd(), '/Music.R') )
+source(file = paste0(getwd(), "/valueBox_override.R"))
 
 ```
 
 
-Column {.sidebar data-width=350}
+Column {.sidebar data-width=250}
 -------------------------------------
 ### Inputs
 ```{r}
 library(crosstalk)
-bscols(
-  list(
-    filter_select(id = "Year", label = "Year", sharedData = shared_dt, group =  ~endtime_Year, multiple = T)
-  )
-)
+# bscols(
+#   list(
+#     filter_checkbox(id = "Year", label = "Year", sharedData = shared_dt, group =  ~Year)
+#   )
+# )
   
 
 ```
@@ -52,87 +50,76 @@ Row
 ### Total Minutes Listened
 
 ``` {r}
-tot_min <- total_min2019
+tot_min <- totalMinutes$`2019`
 valueBox(tot_min, caption = 'Total Listened Minutes', icon = 'fa-spotify', color = '#1DB954')  
+
+#value_Box(shared_dt, ~`Year`,"Year", "2019", 'rgb(5, 112, 176)', 'rgb(255,255,255')
 
 ```
 
 
 ### Most Listened Day
 ```{r}
-most_day <- topDay_2019
+most_day <- weeklyMin[Year %in% 2019]$Day[1]
 #most_day <- top
 valueBox(most_day, caption = 'Most Listened Day', icon = 'fa-spotify', color = '#191414')
 ```
 
 ### Third Graph
 ```{r}
-temp <- topHour_2019
-valueBox(temp, caption = 'temp', icon = 'fa-spotify', color = '#1DB954')
-
-#https://rmarkdown.rstudio.com/flexdashboard/using.html#value_boxes
-
+tempa <- as.numeric(yearlyHour[Year %in% 2019]$hour_listened)[1]
+temp <- paste0(tempa, ':00 - ', tempa + 1, ':00')
+valueBox(temp, caption = 'Most Listened Time', icon = 'fa-spotify', color = '#1DB954')
 ```
 
-
-
-<!-- Row -->
-<!-- ----------------------------------------------------------------------- -->
-
-<!-- ### Total Minutes Listened 2019 -->
-
-<!-- ``` {r} -->
-<!-- tot_min <- total_min2019 -->
-<!-- valueBox(tot_min, caption = 'Total Listened Minutes', icon = 'fa-spotify', color = '#1DB954')   -->
-
-<!-- ``` -->
-
-
-<!-- ### Most Listened Day 2019 -->
-<!-- ```{r} -->
-<!-- most_day <- topDay_2019 -->
-<!-- #most_day <- top -->
-<!-- valueBox(most_day, caption = 'Most Listened Day', icon = 'fa-spotify', color = '#191414') -->
-<!-- ``` -->
-
-<!-- ### Third Graph 2019 -->
-<!-- ```{r} -->
-<!-- temp <- paste0('Hour: ', topHour_2019) -->
-<!-- valueBox(temp, caption = 'temp', icon = 'fa-spotify', color = '#1DB954') -->
-
-<!-- ``` -->
-
-
-Row
+Row {data-height=1000}
 -----------------------------------------------------------------------
 
-### Top Artists 2019
+### Minutes Listened by Season
 ```{r}
-m.path <- paste0(getwd(), '/Music.R')
-source(file = m.path)
-p
+source(file = paste0(getwd(), '/transactionsMusic.R'))
+
+plot_ly(data = temp_music,
+        x = ~Date, y = ~minPlayed,
+        mode = 'lines', line = list(color = 'rgb(205,12,24)'),
+        text = ~paste('</br> Minutes Played: ', minPlayed, 
+                      '</br> Songs Listened: ', Listened_Songs)) %>%
+  display_seasons(., '', max(temp_music$minPlayed))
+  
 ```
 
-### Top Songs
+Row {data-height=1000}
+-----------------------------------------------------------------------
+
+### Money Spent by Season
 ```{r}
-m.path <- paste0(getwd(), '/Music.R')
-source(file = m.path)
-datatable(songs, options = list(bPaginate = TRUE) )
+source(file = paste0(getwd(), '/transactionsMusic.R'))
+
+plot_ly(data = daily_payments, 
+               x = ~Date, y = ~Amount, mode = 'lines',
+        line = list(color = 'rgb(0,0,0'),
+        text = ~paste('</br> Date: ', Date,
+        '</br> Total Amount: ', Amount, 
+        '</br> Total Purchases: ', Purchases), 
+  hoverinfo = 'text') %>% display_seasons(., '', max(daily_payments$Amount))
+
+
 ```   
 
 Row {data-height=650}
 -------------------------------------
 ### Chart 4
 ```{r}
+source(file = paste0(getwd(), '/transactionsMusic.R'))
 
-# plot_ly() %>%
-#         add_trace(data = shared_dt,
-#         x = ~endtime_Month,
-#         y = ~artistName,
-#         group = ~endtime_Year, type = 'scatter')
+#Tried to plot two of them on top of each other, but then did some
+#quick research and apparently they have to be from the same data set.
+#I think the next step is to create a DT that includes both. Need to 
+#make sure they all have dates for the year even if that means having
+#zero values.
 
-      # color = ~artistName, type = 'box',
-       # showlegend = F)
+
+  
 ```
 
 
