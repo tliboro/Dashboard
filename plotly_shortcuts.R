@@ -10,6 +10,12 @@ removeButtons = list(
   'lasso2d'
 ) 
 
+seasons <- list(Winter_1 = c("2019-01-01", "2019-03-18"),
+                Winter_2 = c("2019-12-01", "2019-12-31"),
+                Spring = c("2019-03-19", "2019-06-20"),
+                Summer = c("2019-06-21", "2019-09-22"),
+                Fall = c("2019-09-22", "2019-12-01"))
+
 display_seasons <- function (fig, title, max.height) {
   output <- layout(fig, title = title, 
                    shapes = list(
