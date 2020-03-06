@@ -38,6 +38,43 @@ daily_payments <- merge(x = days, y = daily_payments, by.x = 'days', by.y = 'Dat
 
 #Need to make sure that there are placeholders for zeros
 PAYMENTS <- merge(x = daily_payments, y = temp_music, by = 'days')
+PAYMENTS[is.na(PAYMENTS)] <- 0
+
+summary(PAYMENTS)
+
+MUSIC_SPRING <- PAYMENTS[Date > seasons$Spring[1] & Date < seasons$Spring[2]]
+summary(MUSIC_SPRING)
+
+seasonal_averages <- do.call(rbind, lapply(names(seasons), function(season) {
+          beginning <- seasons[[season]][1]
+          end <- seasons[[season]][2]
+          
+          avg <- PAYMENTS[beginning < Date & Date < end]$minPlayed %>% mean %>% round(., 2)
+          return(c(season, avg) )
+                  }) 
+      )  %>% 
+  as.data.table()
+
+
+
+
+#'Based on the information below there does not seem to be any significant 
+#'correlation between the 'total.money.spent'/day and the 'total.music.listened'/day.
+#'
+#'Slightly unfortunate, but I think there still may be something more to uncover.
+#'
+#'Could potentially just look at a single purchase (or type of) which could be the next step.
+#'However, I do not believe that the effort should be explored based on the initial results.
+cor(x = PAYMENTS$Purchases, y = PAYMENTS$minPlayed, method = 'pearson')
+
+#'Lag of zero represents the correlation against itself (no lag); from comparing both graphs
+#'(on the dashboard) I expected a lag of around 3~days. Based on the output below we can see that
+#'there is some significance. CROSS CORRELATION
+ccf(x=PAYMENTS$Purchases, y= PAYMENTS$minPlayed, lag.max = 10, type = 'correlation', plot = TRUE)
+
+
+
+
 
 #source(paste0(getwd(), '/Desktop/PersonalProjects/plotly_shortcuts.R') )
 # fig <- plot_ly(data = daily_payments, 
