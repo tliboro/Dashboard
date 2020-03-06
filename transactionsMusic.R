@@ -1,4 +1,5 @@
 path <- paste0('/Users/tylerliboro/Desktop/PersonalProjects/transactions.csv')
+library(plotly)
 
 ##### Data Cleaning ####
 bank <- read.csv(file = path, stringsAsFactors = F) %>% as.data.table %>%
@@ -15,47 +16,41 @@ bank <- read.csv(file = path, stringsAsFactors = F) %>% as.data.table %>%
   .[, Weekday := as.factor(weekdays(Date))]
 
 
-AMEX <- bank[Account.Name %in% 'American Express']
+DT_AMEX <- bank[Account.Name %in% 'American Express']
 ordered_weekly <- c('Sunday', 'Monday', 'Tuesday', 'Wednesday', 
                     'Thursday', 'Friday', 'Saturday')
-AMEX$Weekday <- ordered(x = AMEX$Weekday, c('Sunday', 'Monday', 'Tuesday', 'Wednesday', 
+DT_AMEX$Weekday <- ordered(x = DT_AMEX$Weekday, c('Sunday', 'Monday', 'Tuesday', 'Wednesday', 
                                             'Thursday', 'Friday', 'Saturday'))
 
+#MMerge and standardization of the time series (from DT_BANK & DT_MUSIC)
+x <-  min(data[, Date])  ; y <- min(data[, Date])
+days <- seq(from =x, to = y , by = 'days') %>%
+  as.data.table %>% setnames(., '.', 'days') ; rm(x, y)
+
+#Combining Data Sets (BANK )
+DT.MUSIC.BANK <- dcast(data = DT_MUSIC, formula = Date ~ ., fun.aggregate = sum, 
+                        value.var = c('Amount', 'Purchases') ) %>%
+  .[year(Date) %in% 2019] %>% #Only interested in the yearly data. 
+        merge(x = ., y = DT_MUSIC, 
+            by.x = 'Date', by.y = 'days', all.y = T)
+DT.MUSIC.BANK[is.na(DT.MUSIC.BANK)] <- 0
 
 
-library(plotly)
 
 
-
-days <- seq(from = as.Date('2019-02-03'), to = as.Date('2019-12-31'), by = 'days') %>%
-  as.data.table %>% setnames(., '.', 'days')
-
-temp <- AMEX[, Purchases := 1]
-daily_payments <- dcast(data = temp, formula = Date ~ ., fun.aggregate = sum, value.var = c('Amount', 'Purchases') )
-daily_payments <- daily_payments[year(Date) %in% 2019]
-
-daily_payments <- merge(x = days, y = daily_payments, by.x = 'days', by.y = 'Date', all.x = T)
-
-#Need to make sure that there are placeholders for zeros
-PAYMENTS <- merge(x = daily_payments, y = temp_music, by = 'days')
-PAYMENTS[is.na(PAYMENTS)] <- 0
-
-summary(PAYMENTS)
-
-MUSIC_SPRING <- PAYMENTS[Date > seasons$Spring[1] & Date < seasons$Spring[2]]
+# Creating Seasonal Data
+MUSIC_SPRING <- DT.MUSIC.BANK[Date > seasons$Spring[1] & Date < seasons$Spring[2]]
 summary(MUSIC_SPRING)
 
 seasonal_averages <- do.call(rbind, lapply(names(seasons), function(season) {
           beginning <- seasons[[season]][1]
           end <- seasons[[season]][2]
           
-          avg <- PAYMENTS[beginning < Date & Date < end]$minPlayed %>% mean %>% round(., 2)
+          avg <- DT.MUSIC.BANK[beginning < Date & Date < end]$minPlayed %>% mean %>% round(., 2)
           return(c(season, avg) )
-                  }) 
-      )  %>% 
-  as.data.table()
-
-
+        }) 
+      )  %>% as.data.table(.) %>% 
+  setnames(., old = c('V1','V2'),  new = c('Season','Avg') )
 
 
 #'Based on the information below there does not seem to be any significant 
@@ -65,24 +60,11 @@ seasonal_averages <- do.call(rbind, lapply(names(seasons), function(season) {
 #'
 #'Could potentially just look at a single purchase (or type of) which could be the next step.
 #'However, I do not believe that the effort should be explored based on the initial results.
-cor(x = PAYMENTS$Purchases, y = PAYMENTS$minPlayed, method = 'pearson')
+cor(x = DT.MUSIC.BANK$Purchases, y = DT.MUSIC.BANK$minPlayed, method = 'pearson')
 
 #'Lag of zero represents the correlation against itself (no lag); from comparing both graphs
 #'(on the dashboard) I expected a lag of around 3~days. Based on the output below we can see that
 #'there is some significance. CROSS CORRELATION
-ccf(x=PAYMENTS$Purchases, y= PAYMENTS$minPlayed, lag.max = 10, type = 'correlation', plot = TRUE)
-
-
-
-
-
-#source(paste0(getwd(), '/Desktop/PersonalProjects/plotly_shortcuts.R') )
-# fig <- plot_ly(data = daily_payments, 
-#                x = ~Date, y = ~Amount, mode = 'lines', text = ~paste('</br> Date: ', Date,
-#                                                                     '</br> Total Amount: ', Amount, 
-#                                                                      '</br> Total Purchases: ', Purchases), 
-#                hoverinfo = 'text') %>% display_seasons(., 'Spending Habits by Season', max(daily_payments$Amount))
-# fig
-# 
+ccf(x=DT.MUSIC.BANK$Purchases, y= DT.MUSIC.BANK$minPlayed, lag.max = 10, type = 'correlation', plot = TRUE)
 
 
