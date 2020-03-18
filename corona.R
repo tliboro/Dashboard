@@ -81,146 +81,49 @@ ggplot(data = top.rates.plot, aes(x = Country.Region, y = value)) +
 
 ts_data <- fread(file = paste0(getwd(), '/Documents/github/COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv'), stringsAsFactors = F, data.table = T)         
 ts_data_melted <- melt(data = ts_data, id.vars = c('Province/State', 'Country/Region', 'Lat', 'Long'), variable.name = 'Date', value.name = 'Confirmed') %>%
-  as.data.table() %>% .[, Date := as.Date(Date, format = '%m/%d/%y')]
+  as.data.table() %>% .[, Date := as.Date(Date, format = '%m/%d/%y')] 
 
-
-library(plotly)
-
-df <- data.frame(x = c("1", "2", "3", "4", "5"), 
-                 y = c("1", "1", "1", "1", "1")) 
-steps <- list(
-  list(args = list("marker.color", "red"), 
-       label = "Red", 
-       method = "restyle", 
-       value = "1"
-  ),
-  list(args = list("marker.color", "green"), 
-       label = "Green", 
-       method = "restyle", 
-       value = "2"
-  ),
-  list(args = list("marker.color", "blue"), 
-       label = "Blue", 
-       method = "restyle", 
-       value = "3"
-  )
-)
-
-fig<- df 
-fig <- fig %>% plot_ly(x = ~x, y = ~y,
-                       mode = "markers", 
-                       marker = list(size = 20,
-                                     color = 'green'), 
-                       type = "scatter") 
-fig <- fig %>% layout(title = "Basic Slider", geo = g)#,
-                      sliders = list(
-                        list(
-                          active = 1, 
-                          currentvalue = list(prefix = "Color: "), 
-                          pad = list(t = 60), 
-                          steps = steps))) 
-
-fig
-
-
-steps <- list(
-  list(args = list(ts_data_melted[Date %in% '2020-01-22']) , 
-       label = "01/22", 
-       method = 'relayout', 
-       value = "1"
-       
-  ),
-  list(args = list(ts_data_melted[Date %in% '2020-03-11']), 
-       label = "03/11",
-       method = "relayout", 
-       value = "2"
-  ),
-  list(args = list("marker.color", "blue"), 
-       label = "3/13", 
-       method = "relayout", 
-       value = "3"
-  )
-)
-
-all_lon <- list()
-dates <- unique(ts_data_melted$Date)
-
-
-fig <- plot_geo(data = ts_data_melted, lat = ~Lat, lon = ~Long)
-fig %>% layout(title = 'COVID-19: Confirmed Cases over Time', 
-               sliders = list(
-                 list( 
-                   active = 1, 
-                   method = 'relayout',
-                   currentvalue = list(prefix = "Date: "), 
-                   #pad = list(t = 60), 
-                   
-                   steps = steps))
-               )
-
-
-ROS <- dcast(data = data, formula = Country.Region + Date ~ ., fun = sum, value.var = c('Confirmed', 'Deaths'), )
-
-library(fmsb) #Creating Radar Charts
-
-
-## MAKE CONTOUR LINES
-## Note, bandwidth choice is based on MASS::bandwidth.nrd()
-kde <- bkde2D(USA[ , list(Longitude, Latitude)],
-              bandwidth=c(.0045, .0045), gridsize = c(500,500))
-CL <- contourLines(kde$x1 , kde$x2 , kde$fhat)
-
-## EXTRACT CONTOUR LINE LEVELS
-LEVS <- as.factor(sapply(CL, `[[`, "level"))
-NLEV <- length(levels(LEVS))
-
-pgons <- lapply(1:length(CL), function(i)
-  Polygons(list(Polygon(cbind(CL[[i]]$x, CL[[i]]$y))), ID=i))
-spgons = SpatialPolygons(pgons)
-
-## Leaflet map with polygons
-leaflet(spgons) %>% addTiles() %>% 
-  addPolygons(color = heat.colors(NLEV, NULL)[LEVS])
-
-library(sp)
-library(rgdal)
-library(KernSmooth)
-
-install.packages('shiny')
-library(shiny) ; library(leaflet)
+library(shiny) ; library(leaflet) ; library(htmltools)
 
 ui <- fluidPage(
   titlePanel('COVID-19'),
-  sliderInput('selected_Date',
-              'Date: ',
-              min = as.Date("2020-01-22"),
-              max = as.Date("2020-03-13"),
-              value = as.Date("2020-01-25"),
-              timeFormat = '%Y-%m-%d'),
+  sidebarLayout(
+    sidebarPanel(
+      
+      sliderInput(inputId = 'selected_Date',
+                  label = 'Date: ',
+                  min = as.Date("2020-01-22"),
+                  max = as.Date("2020-03-13"),
+                  value = as.Date("2020-01-25"),
+                  timeFormat = '%Y-%m-%d')
+    )
+  ,
+  
   
   mainPanel(leafletOutput('mymap'))
 )
+)
+###################
 
 server <- function(input, output) {
   
   reactiveDT <- reactive({
     day <- input$selected_Date
-    
+    print(day)
     reactiveDT <- ts_data_melted[Date %in% day]
+    
   })
-  print(reactiveDT)
-  
-  
+
+
   output$mymap <- renderLeaflet({
     leaflet(reactiveDT()) %>%
-      #addTiles(.) %>% addCircles(lat = ~ Latitude,
-       #                         lng = ~ Longitude)
       setView(lng = -99, lat = 45, zoom = 2) %>% 
       addTiles() %>%
-      addCircles(map = reactiveDT(), lng = ~ Longitude, lat = ~ Latitude)
+      addCircles(lng = ~ reactiveDT()$Long, lat = ~ reactiveDT()$Lat, popup = ~htmlEscape(Confirmed), radius = ~Confirmed, weight = ~Confirmed)
+    
       })
 }
-shinyApp(ui, server)
+#shinyApp(ui, server)
 
 
 #' USE THIS DATA SET TO CREATE THE INCREMENTAT
